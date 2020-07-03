@@ -10,6 +10,9 @@
   ],
   "main": "src/index.js",
   "repository": "git@github.com:dthyresson/netlify-plugin-redwoodjs-env-validator.git",
+  "bugs": {
+    "url": "https://github.com/dthyresson/netlify-plugin-redwoodjs-env-validator/issues"
+  },
   "author": "A. David Thyresson <david@stattleship.com>",
   "license": "MIT",
   "private": false,
