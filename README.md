@@ -18,7 +18,9 @@ Since prefixing with `REDWOOD_ENV_` could make for long envs and re0names them (
 
 That requires that you need to keep everything in sync and up-to-date which means that you may have added a new env, but forgottent ot whitelist it; or you removed an env and it is still whitelisted, or you whitelisted and env and forgot to add it to Netlify, and so on.
 
-This plug is here to help!
+The first time deploying a RedwoodJS app to Netlify, I didn't know to whitelist envs and my app broke all over the place.
+
+This build plugin is here to help!
 
 ## Setup
 
@@ -50,6 +52,15 @@ AUTH0_CLIENT_ID=""
 AUTH0_AUDIENCE=""
 AUTH0_REDIRECT_URI=""
 ```
+
+IMPORTANT: You need to use `""` to defince an empty default.
+
+Otherwise you may see an error when building onm Netlify like:
+
+```
+bash: -c: line 0: unexpected EOF while looking for matching `"'
+bash: -c: line 1: syntax error: unexpected end of file
+````
 
 .. that you'd devine in your `.env` but not commit.
 
@@ -118,6 +129,12 @@ yarn global add netlify-cli
 
 ### Run Netlify builds locally
 
+You will ned to install the [Netlify CLI](https://docs.netlify.com/cli/get-started/#installation).
+
+```
+npm install netlify-cli -g
+```
+
 To execute a Netlify build locally, run the following command from the root of your project:
 
 ```
@@ -132,6 +149,23 @@ netlify build --dry
 
 ## Scenarios
 
+### Success!!!
+
+```
+6:47:42 PM: ┌─────────────────────────────────────────────────────────────────────┐
+6:47:42 PM: │ 1. onPreBuild command from ./netlify-plugin-redwoodjs-env-validator │
+6:47:42 PM: └─────────────────────────────────────────────────────────────────────┘
+6:47:42 PM: ​
+6:47:42 PM: Validating the environment configuration for RedwoodJS deployment to Netlify ...
+6:47:42 PM: Expecting Netlify Environment settings to set envs defined in your RedwoodJS '.env.defaults'.
+6:47:42 PM: DATABASE_URL
+6:47:42 PM: BINARY_TARGET
+6:47:42 PM: OPEN_WEATHER_MAP_TOKEN
+6:47:42 PM: EMOJI
+6:47:42 PM: DEFAULT_ZIP
+6:47:42 PM: ... ok!
+```
+
 ### No includeEnvironmentVariables set in redwood.toml
 
 If the `includeEnvironmentVariables` in`redwood.toml` is empty,
@@ -141,7 +175,12 @@ that's strange because probably have at least set the
 #### Example
 
 ```
-todo
+6:57:55 PM: ┌──────────────────────────────────────────────────────────┐
+6:57:55 PM: │ Plugin "./netlify-plugin-redwoodjs-env-validator" failed │
+6:57:55 PM: └──────────────────────────────────────────────────────────┘
+6:57:55 PM: ​
+6:57:55 PM:   Error message
+6:57:55 PM:   Error: Your 'redwood.toml' has not included any envs on either the web or api side. Did you include your Prisma settings?
 ```
 
 ### Missing includeEnvironmentVariables set in redwood.toml
@@ -151,17 +190,33 @@ There are expected envs, but some of them are not found in the `redwood.toml`
 #### Example
 
 ```
-todo
+7:00:01 PM: ┌──────────────────────────────────────────────────────────┐
+7:00:01 PM: │ Plugin "./netlify-plugin-redwoodjs-env-validator" failed │
+7:00:01 PM: └──────────────────────────────────────────────────────────┘
+7:00:01 PM: ​
+7:00:01 PM:   Error message
+7:00:01 PM:   Error: Your '.env.defaults' has configured envs, but the following are missing from your redwood.toml 'includeEnvironmentVariables':
+7:00:01 PM: ​
+7:00:01 PM:   EMOJI
 ```
 
 ### Missing in Netlify's configured env
 
 There are expected envs, but some of them are not found in Netlify's configured env
 
+Note: this actually checks the env's configured on Netlify. So, even if the exist in you .env, you still need to set them up in Netlify.
+
 #### Example
 
 ```
-todo
+6:49:58 PM: ┌──────────────────────────────────────────────────────────┐
+6:49:58 PM: │ Plugin "./netlify-plugin-redwoodjs-env-validator" failed │
+6:49:58 PM: └──────────────────────────────────────────────────────────┘
+6:49:58 PM: ​
+6:49:58 PM:   Error message
+6:49:58 PM:   Error: Your '.env.defaults' has configured envs, but the following are missing from Netlify's Deploy environment variables:
+​
+6:49:58 PM:   DEFAULT_ZIP
 ```
 
 ### Missing includeEnvironmentVariables in Netlify's configured env
@@ -169,8 +224,27 @@ todo
 There are envs defined in `redwood.toml`, but some of them are not found 
 in Netlify's configured env.
 
+This might mean there is an env that is no longer neeed -- or maybe a typo?
+
 #### Example
 
 ```
-todo
+7:06:42 PM: ┌──────────────────────────────────────────────────────────┐
+7:06:42 PM: │ Plugin "./netlify-plugin-redwoodjs-env-validator" failed │
+7:06:42 PM: └──────────────────────────────────────────────────────────┘
+7:06:42 PM: ​
+7:06:42 PM:   Error message
+7:06:42 PM:   Error: Your 'redwood.toml' has included envs, but the following are missing from Netlify's Deploy environment variables:
+​
+7:06:42 PM:   NO_LONGER_NEEDED_ENV
 ```
+
+### Considerations
+
+* Still testing on Netlify
+* Lacks tests
+* HAve not checked how well this plays with Netlify's [Sensitive variable policy](https://docs.netlify.com/configure-builds/environment-variables/#sensitive-variable-policy)
+
+### Future
+
+* Update the toml with the necessart expected envs?
