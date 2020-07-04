@@ -243,7 +243,7 @@ Note: this actually checks the env's configured on Netlify. So, even if the exis
 #### Example
 
 ![Your '.env.defaults' has configured envs, but the following are missing from Netlify's Deploy environment variables](docs/scenario_expected_but_missing_in_netlify.png)
-ß
+
 ```
 6:49:58 PM: ┌─────────────────────────────────────────────────────ß─────┐
 6:49:58 PM: │ Plugin "./netlify-plugin-redwoodjs-env-validator" failed │
