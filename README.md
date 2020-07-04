@@ -1,4 +1,4 @@
-# netlify-plugin-redwoodjs-env-validator
+# ![icon](/assets/favicon.png) netlify-plugin-redwoodjs-env-validator
 
 This [Netlify Build Plugin](https://docs.netlify.com/configure-builds/build-plugins/) helps to validate [RedwoodJS](https://redwoodjs.com/) [environment variables](https://redwoodjs.com/docs/environment-variables) when [deploying](https://docs.netlify.com/site-deploys/overview/) to [Netlify](https://www.netlify.com/).
 
