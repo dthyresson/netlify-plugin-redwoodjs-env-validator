@@ -1,6 +1,6 @@
 # netlify-plugin-redwoodjs-env-validator
 
-This [Netlify Builld Plugin](https://docs.netlify.com/configure-builds/build-plugins/) helps to validate [RedwoodJS](https://redwoodjs.com/) [environment variables](https://redwoodjs.com/docs/environment-variables) when [deploying](https://docs.netlify.com/site-deploys/overview/) to [Netlify](https://www.netlify.com/).
+This [Netlify Build Plugin](https://docs.netlify.com/configure-builds/build-plugins/) helps to validate [RedwoodJS](https://redwoodjs.com/) [environment variables](https://redwoodjs.com/docs/environment-variables) when [deploying](https://docs.netlify.com/site-deploys/overview/) to [Netlify](https://www.netlify.com/).
 
 It aims to check that the environment variables needed for a healthy running RedwoodJS app have been properly setup; and it helps to keep them in sync betwen the `.env.defaults` to `redwood.toml` and the deployment environment configuration.
 
@@ -16,7 +16,7 @@ See: [https://redwoodjs.com/docs/environment-variables#web](https://redwoodjs.co
 
 Since prefixing with `REDWOOD_ENV_` could make for long envs and re0names them (in a way) and you definitely will and should not check your `.env` to with the settings to the Github repo, then best option is to "Whitelist them in your `redwood.toml`.
 
-That requires that you need to keep everything in sync and up-to-date which means that you may have added a new env, but forgottent ot whitelist it; or you removed an env and it is still whitelisted, or you whitelisted and env and forgot to add it to Netlify, and so on.
+That requires that you need to keep everything in sync and up-to-date which means that you may have added a new env, but forgotten to whitelist it; or you removed an env and it is still whitelisted, or you whitelisted and env and forgot to add it to Netlify, and so on.
 
 The first time deploying a RedwoodJS app to Netlify, I didn't know to whitelist envs and my app broke all over the place.
 
@@ -53,16 +53,7 @@ AUTH0_AUDIENCE=""
 AUTH0_REDIRECT_URI=""
 ```
 
-IMPORTANT: You need to use `""` to defince an empty default.
-
-Otherwise you may see an error when building onm Netlify like:
-
-```
-bash: -c: line 0: unexpected EOF while looking for matching `"'
-bash: -c: line 1: syntax error: unexpected end of file
-````
-
-.. that you'd devine in your `.env` but not commit.
+... that you'd define in your `.env` but not commit.
 
 ```
 # .env, DO NOT COMMIT
@@ -102,9 +93,33 @@ Now that the plugin knows the "expected env" as defined in `env.defaults` it can
 
 See the Scenarios below.
 
+### Troubleshooting
+
+You **must** use `""` when defining an **empty default**.
+
+Otherwise you may see an error when building on Netlify like:
+
+```
+bash: -c: line 0: unexpected EOF while looking for matching `"'
+bash: -c: line 1: syntax error: unexpected end of file
+````
+Alternatively, just specify mock values like:
+
+```
+# .env.defaults, safe to commit
+
+DATABASE_URL="url"
+
+AUTH0_DOMAIN="domain"
+AUTH0_CLIENT_ID="id"
+AUTH0_AUDIENCE="url"
+AUTH0_REDIRECT_URI="url"
+```
+
+
 ## Usage
 
-Add a [[plugins]] entry to your netlify.toml file.
+Add a ``[[plugins]]`` entry to your `netlify.toml` file.
 
 Note since this package is not published, you'll have to use [File based installation](https://docs.netlify.com/configure-builds/build-plugins/#file-based-installation) and copy the contents of this repo to the root of your RedwoodJS app project.
 
@@ -113,11 +128,32 @@ Note since this package is not published, you'll have to use [File based install
 package = './netlify-plugin-redwoodjs-env-validator'
 ```
 
+Until this plugin is packaged, you'll have to include the plugin code alongside your app in file-based installation mode.
+
+![plugin alongside app](docs/plugin_alongside_app.png)
+
+You may also have to add `netlify-plugin-redwoodjs-env-validator` as a package in your app's `package.json` and `yarn install`.
+
+```
+{
+  "private": true,
+  "workspaces": {
+    "packages": [
+      "api",
+      "web",
+      "netlify-plugin-redwoodjs-env-validator"
+    ]
+  },
+  ```
+
 ## Local Use
 
 You can [run builds in Netlify CLI](https://docs.netlify.com/cli/get-started/#run-builds-locally) to mimic the behavior of running a build on Netlify — including Build Plugins.
 
-### Install Netlify CLI
+
+### Run Netlify builds locally
+
+You will ned to install the [Netlify CLI](https://docs.netlify.com/cli/get-started/#installation).
 
 ```
 # Install Netlify CLI globally
@@ -125,14 +161,6 @@ npm install netlify-cli -g
 
 ### OR use Yarn ### 
 yarn global add netlify-cli
-```
-
-### Run Netlify builds locally
-
-You will ned to install the [Netlify CLI](https://docs.netlify.com/cli/get-started/#installation).
-
-```
-npm install netlify-cli -g
 ```
 
 To execute a Netlify build locally, run the following command from the root of your project:
@@ -146,6 +174,8 @@ If you'd like to get a summary of what a build will do without taking the time t
 ```
 netlify build --dry
 ```
+
+For sample build output, see Scenarios.
 
 ## Scenarios
 
@@ -174,6 +204,8 @@ that's strange because probably have at least set the
 
 #### Example
 
+![Your 'redwood.toml' has not included any envs on either the web or api side.](docs/scenario_toml_included_empty.png)
+
 ```
 6:57:55 PM: ┌──────────────────────────────────────────────────────────┐
 6:57:55 PM: │ Plugin "./netlify-plugin-redwoodjs-env-validator" failed │
@@ -188,6 +220,8 @@ that's strange because probably have at least set the
 There are expected envs, but some of them are not found in the `redwood.toml`
 
 #### Example
+
+![Your '.env.defaults' has configured envs, but the following are missing from your redwood.toml 'includeEnvironmentVariables](docs/scenario_in_defaults_not_in_toml.png)
 
 ```
 7:00:01 PM: ┌──────────────────────────────────────────────────────────┐
@@ -208,8 +242,10 @@ Note: this actually checks the env's configured on Netlify. So, even if the exis
 
 #### Example
 
+![Your '.env.defaults' has configured envs, but the following are missing from Netlify's Deploy environment variables](docs/scenario_expected_but_missing_in_netlify.png)
+ß
 ```
-6:49:58 PM: ┌──────────────────────────────────────────────────────────┐
+6:49:58 PM: ┌─────────────────────────────────────────────────────ß─────┐
 6:49:58 PM: │ Plugin "./netlify-plugin-redwoodjs-env-validator" failed │
 6:49:58 PM: └──────────────────────────────────────────────────────────┘
 6:49:58 PM: ​
@@ -228,6 +264,9 @@ This might mean there is an env that is no longer neeed -- or maybe a typo?
 
 #### Example
 
+
+![Your 'redwood.toml' has included envs, but the following are missing from Netlify's Deploy environment variables](docs/scenario_in_toml_not_netlify.png)
+
 ```
 7:06:42 PM: ┌──────────────────────────────────────────────────────────┐
 7:06:42 PM: │ Plugin "./netlify-plugin-redwoodjs-env-validator" failed │
@@ -239,12 +278,24 @@ This might mean there is an env that is no longer neeed -- or maybe a typo?
 7:06:42 PM:   NO_LONGER_NEEDED_ENV
 ```
 
-### Considerations
+## Demo 
 
-* Still testing on Netlify
+The sample [redwoodjs-env-validator-playground](https://github.com/dthyresson/redwoodjs-env-validator-playground) RedwoodJS app demostrates use of this plugin.
+
+A [demo](https://redwoodjs-env-validator-playground.netlify.app) is available at [https://redwoodjs-env-validator-playground.netlify.app](https://redwoodjs-env-validator-playground.netlify.app).
+
+## Issues
+
+https://github.com/dthyresson/netlify-plugin-redwoodjs-env-validator/issues
+
+## Considerations
+
 * Lacks tests
-* HAve not checked how well this plays with Netlify's [Sensitive variable policy](https://docs.netlify.com/configure-builds/environment-variables/#sensitive-variable-policy)
+* Have not checked how well this plays with Netlify's [Sensitive variable policy](https://docs.netlify.com/configure-builds/environment-variables/#sensitive-variable-policy)
+* Currently, the Plugin code has to be included alongside deployed app
+* Maybe not log out the expected? Concern if logs are public and they expose keys?
 
-### Future
+## Future
 
-* Update the toml with the necessart expected envs?
+* Package up 
+* Update the toml with the necessary expected envs?
