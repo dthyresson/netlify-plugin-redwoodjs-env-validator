@@ -6,7 +6,7 @@ It aims to check that the environment variables needed for a healthy running Red
 
 ## Why?
 
-When deploying a RedwoodJS app to Netlify, even though you have setup the Build environment variables as part of teh Netlify Build & deploy settings, there is still [one step needed](https://redwoodjs.com/docs/environment-variables#web) to make those envs available on the `web` side of your RewoodJS app, either:
+When deploying a RedwoodJS app to Netlify, even though you have setup the Build environment variables as part of the Netlify Build & deploy settings, there is still [one step needed](https://redwoodjs.com/docs/environment-variables#web) to make those envs available on the `web` side of your RewoodJS app, either:
 
 1. Prefix your env vars with `REDWOOD_ENV_`
 1. Whitelist them in your `redwood.toml`
